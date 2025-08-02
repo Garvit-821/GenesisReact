@@ -6,11 +6,11 @@
    cd GenesisReact
 
 2. **Install dependencies**
-
-npm i
+      ```bash
+      npm i
 
 
 3. **Build & Run**
 -To build and start the project:
-
-npm start build
+   ```bash
+   npm start build
