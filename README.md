@@ -1,14 +1,16 @@
--Clone the repository:
+## 📦 Installation
 
-git clone https://github.com/Garvit-821/GenesisReact
-cd GenesisReact
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Garvit-821/GenesisReact
+   cd GenesisReact
 
--Install dependencies:
+2. **Install dependencies**
 
 npm i
 
 
-⚡ Build & Run
+3. **Build & Run**
 -To build and start the project:
 
 npm start build
