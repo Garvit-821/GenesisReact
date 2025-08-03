@@ -1,0 +1,74 @@
+
+#team {
+  position: relative;
+  height: 100vh;
+  background: #0a0a0a;
+  overflow: hidden;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  z-index: 10;
+}
+
+.section-title span {
+  color: #09f;
+}
+
+.team-card-overlay {
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  transform: translate(-50%, -50%);
+}
+
+.member-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 1rem;
+}
+
+.member-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-card-overlay h3 {
+  font-size: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.team-card-overlay p {
+  color: #09f;
+  margin-bottom: 1rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-links a {
+  color: white;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #09f;
+}
