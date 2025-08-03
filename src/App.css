@@ -295,11 +295,6 @@ nav {
     transform: translateY(5px);
 }
 
-section {
-    padding: 6rem 5%;
-    position: relative;
-    overflow: hidden;
-}
 
 .section-title {
     font-size: 2.5rem;
@@ -787,7 +782,7 @@ footer::before {
 
 #events {
     background-color: #111;
-    position: relative;
+    position: center;
     overflow: hidden;
 }
 
@@ -805,6 +800,7 @@ footer::before {
 .events-container {
     max-width: 1200px;
     margin: 0 auto;
+    position: center;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
@@ -998,7 +994,7 @@ footer::before {
 
 #sponsors {
     background-color: #0a0a0a;
-    position: relative;
+    position: center;
 }
 
 #sponsors::after {
@@ -1119,7 +1115,7 @@ footer::before {
 }
 
 #team {
-  position: relative;
+
   height: 100vh;
   background: #0a0a0a;
   overflow: hidden;
