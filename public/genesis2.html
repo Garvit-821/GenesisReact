@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Genesis 3D Loader - Enhanced</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #1a0b2e 0%, #16213e 30%, #0f1419 100%);
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #6366f1;
+    }
+
+    /* === Enhanced Background === */
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: 
+        linear-gradient(135deg, #1a0b2e 0%, #16213e 30%, #0f1419 100%),
+        radial-gradient(ellipse at 70% 20%, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 40%, transparent 70%),
+        radial-gradient(ellipse at 30% 80%, rgba(236, 72, 153, 0.12) 0%, rgba(139, 92, 246, 0.06) 40%, transparent 70%);
+      overflow: hidden;
+    }
+
+    /* Floating icons */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .floating-icon {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      opacity: 0.3;
+      animation: floatUp 25s linear infinite;
+      filter: drop-shadow(0 0 8px #8b5cf6) drop-shadow(0 0 16px #6366f1);
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(110vh) rotate(0deg) scale(0.8);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.4;
+      }
+      50% {
+        opacity: 0.5;
+        transform: translateY(50vh) rotate(180deg) scale(1);
+      }
+      90% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    /* Scan line effect */
+    .scanlines {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: repeating-linear-gradient(to bottom, rgba(139, 92, 246, 0.06) 0, rgba(99, 102, 241, 0.08) 1px, transparent 1px, transparent 4px);
+      animation: moveScanlines 3s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes moveScanlines {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 4px; }
+    }
+
+    /* GENESIS Text */
+    .genesis-wrapper {
+      z-index: 3;
+      text-align: center;
+      position: relative;
+    }
+
+    .genesis-text {
+      font-size: 5rem;
+      letter-spacing: 8px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 30%, #a855f7 60%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+      filter: brightness(1.2) saturate(1.3) drop-shadow(0 0 20px rgba(139, 92, 246, 0.6));
+      animation: flickerIn 3s ease-out forwards;
+      opacity: 0;
+      margin-bottom: 10px;
+      font-feature-settings: 'kern' 1, 'liga' 1;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @keyframes flickerIn {
+      0% { opacity: 0; text-shadow: none; }
+      10% { opacity: 1; text-shadow: 0 0 15px #8b5cf6; }
+      20% { opacity: 0.7; }
+      40% { opacity: 1; transform: scale(1.01); }
+      60% { opacity: 0.9; }
+      100% {
+        opacity: 1;
+        text-shadow: 
+          0 0 20px rgba(139, 92, 246, 0.8), 
+          0 0 40px rgba(99, 102, 241, 0.6), 
+          0 0 60px rgba(168, 85, 247, 0.4);
+      }
+    }
+
+    /* Subtitle */
+    .subtitle {
+      margin-top: 15px;
+      margin-bottom: 30px;
+      font-size: 1.2rem;
+      color: #a78bfa;
+      letter-spacing: 2px;
+      opacity: 0.95;
+      text-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .loading-dots::after {
+      content: '...';
+      animation: dots 2s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0% { content: '.'; }
+      25% { content: '..'; }
+      50% { content: '...'; }
+      75% { content: ''; }
+      100% { content: '.'; }
+    }
+
+    /* Progress Circle */
+    .progress-container {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 20px auto;
+    }
+
+    .progress-circle {
+      width: 150px;
+      height: 150px;
+      transform: rotate(-90deg);
+    }
+
+    .progress-circle-bg {
+      fill: none;
+      stroke: #1e1b4b;
+      stroke-width: 7;
+      filter: drop-shadow(0 0 6px #1e1b4b);
+    }
+
+    .progress-circle-fill {
+      fill: none;
+      stroke: url(#progressGradient);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-dasharray: 439.82;
+      stroke-dashoffset: 439.82;
+      filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 20px rgba(99, 102, 241, 0.6));
+      transition: stroke-dashoffset 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #a78bfa;
+      text-shadow: 0 0 8px rgba(167, 139, 250, 0.8);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Circuit Pathlines */
+    .circuit-line {
+      position: absolute;
+      width: 2px;
+      height: 100px;
+      background: linear-gradient(to bottom, rgba(139, 92, 246, 0) 0%, rgba(167, 139, 250, 0.8) 50%, rgba(139, 92, 246, 0) 100%);
+      animation: circuitFlow 4s linear infinite;
+      border-radius: 1px;
+    }
+
+    @keyframes circuitFlow {
+      0% {
+        transform: translateY(-20px);
+        opacity: 0;
+        box-shadow: none;
+      }
+      10% { opacity: 0.4; }
+      50% {
+        opacity: 1;
+        box-shadow: 0 0 10px #a78bfa;
+      }
+      100% {
+        transform: translateY(calc(100vh + 20px));
+        opacity: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* Animated Background Words */
+    .background-words {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .background-word {
+      position: absolute;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: rgba(167, 139, 250, 0.8);
+      text-shadow: 
+        0 0 8px rgba(167, 139, 250, 0.6),
+        0 0 16px rgba(139, 92, 246, 0.4);
+      white-space: nowrap;
+      animation: floatWord 20s linear infinite;
+      transform: translateZ(0);
+      will-change: transform, opacity;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .background-word:nth-child(1) {
+      top: 15%;
+      left: -200px;
+      animation-delay: 0s;
+      animation-duration: 25s;
+    }
+
+    .background-word:nth-child(2) {
+      top: 35%;
+      right: -200px;
+      animation-delay: -5s;
+      animation-duration: 30s;
+      animation-name: floatWordReverse;
+    }
+
+    .background-word:nth-child(3) {
+      top: 55%;
+      left: -200px;
+      animation-delay: -10s;
+      animation-duration: 28s;
+    }
+
+    .background-word:nth-child(4) {
+      top: 75%;
+      right: -200px;
+      animation-delay: -15s;
+      animation-duration: 32s;
+      animation-name: floatWordReverse;
+    }
+
+    .background-word:nth-child(5) {
+      top: 25%;
+      left: -200px;
+      animation-delay: -8s;
+      animation-duration: 35s;
+    }
+
+    .background-word:nth-child(6) {
+      top: 65%;
+      right: -200px;
+      animation-delay: -12s;
+      animation-duration: 27s;
+      animation-name: floatWordReverse;
+    }
+
+    @keyframes floatWord {
+      0% {
+        transform: translateX(-200px) translateY(0px) rotate(-3deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+      }
+      50% {
+        opacity: 0.9;
+        transform: translateX(calc(50vw - 100px)) translateY(-15px) rotate(0deg);
+      }
+      90% {
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateX(calc(100vw + 200px)) translateY(0px) rotate(3deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes floatWordReverse {
+      0% {
+        transform: translateX(calc(100vw + 200px)) translateY(0px) rotate(3deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+      }
+      50% {
+        opacity: 0.9;
+        transform: translateX(calc(50vw - 100px)) translateY(-15px) rotate(0deg);
+      }
+      90% {
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateX(-200px) translateY(0px) rotate(-3deg);
+        opacity: 0;
+      }
+    }
+
+    /* Responsive adjustments for background words */
+    @media (max-width: 768px) {
+      .background-word {
+        font-size: 1.2rem;
+      }
+      .background-word:nth-child(n+4) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .background-word {
+        font-size: 1.1rem;
+      }
+      .background-word:nth-child(n+3) {
+        display: none;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .genesis-text { 
+        font-size: 3.5rem; 
+        letter-spacing: 6px; 
+      }
+      .subtitle { 
+        font-size: 1rem; 
+      }
+      .progress-container { 
+        width: 120px; 
+        height: 120px; 
+      }
+      .progress-circle { 
+        width: 120px; 
+        height: 120px; 
+      }
+    }
+
+    @media (max-width: 480px) {
+      .genesis-text { 
+        font-size: 2.8rem; 
+        letter-spacing: 4px; 
+      }
+      .subtitle { 
+        font-size: 0.9rem; 
+      }
+      .progress-container { 
+        width: 100px; 
+        height: 100px; 
+      }
+      .progress-circle { 
+        width: 100px; 
+        height: 100px; 
+      }
+      .progress-text { 
+        font-size: 1.2rem; 
+      }
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #4c1d95 0%, #6366f1 50%, #8b5cf6 100%);
+      color: #f8fafc;
+      border: none;
+      border-radius: 2em;
+      padding: 0.7em 2.2em;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 
+        0 0 20px rgba(139, 92, 246, 0.4), 
+        0 0 40px rgba(99, 102, 241, 0.3);
+      text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+      transition: all 0.3s ease;
+      outline: none;
+      margin: 1.5em auto 0 auto;
+      display: block;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .btn:hover, .btn:focus {
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+      color: #fff;
+      box-shadow: 
+        0 0 30px rgba(139, 92, 246, 0.6), 
+        0 0 60px rgba(99, 102, 241, 0.4);
+      text-shadow: 0 0 12px rgba(139, 92, 246, 1);
+      transform: scale(1.05) translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <!-- Scan line overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Animated Background Words -->
+    <div class="background-words">
+      <div class="background-word">Blockchain</div>
+      <div class="background-word">DeFi</div>
+      <div class="background-word">NFT</div>
+      <div class="background-word">Hackathon</div>
+      <div class="background-word">Ethereum</div>
+      <div class="background-word">Web3</div>
+      <div class="background-word">Protocol</div>
+      <div class="background-word">Solana</div>
+      <div class="background-word">React</div>
+      <div class="background-word">Tailwind</div>
+      <div class="background-word">Commit</div>
+      <div class="background-word">Git</div>
+      <div class="background-word">Version Control</div>
+      <div class="background-word">Hash</div>
+      <div class="background-word">Smart Contract</div>
+      <div class="background-word">DAO</div>
+      <div class="background-word">Wallet</div>
+      <div class="background-word">Explorer</div>
+      <div class="background-word">Node</div>
+      <div class="background-word">Gas</div>
+      <div class="background-word">DEX</div>
+      <div class="background-word">Liquidity</div>
+      <div class="background-word">Staking</div>
+      <div class="background-word">Airdrop</div>
+      <div class="background-word">Validator</div>
+      <div class="background-word">Layer 2</div>
+      <div class="background-word">Bridge</div>
+      <div class="background-word">Fork</div>
+      <div class="background-word">Testnet</div>
+      <div class="background-word">Mainnet</div>
+    </div>
+
+    <!-- Floating Icons -->
+    <div class="animated-bg" id="floatingIcons"></div>
+
+    <!-- Circuit path lines -->
+    <div class="circuit-line" style="left: 15%; animation-delay: 0s;"></div>
+    <div class="circuit-line" style="left: 30%; animation-delay: 1.2s;"></div>
+    <div class="circuit-line" style="left: 45%; animation-delay: 2.4s;"></div>
+    <div class="circuit-line" style="left: 60%; animation-delay: 3.6s;"></div>
+    <div class="circuit-line" style="left: 75%; animation-delay: 1.8s;"></div>
+    <div class="circuit-line" style="left: 85%; animation-delay: 0.6s;"></div>
+  </div>
+
+  <!-- Main GENESIS UI -->
+  <div class="genesis-wrapper">
+    <div class="genesis-text">GENESIS</div>
+    <div class="subtitle">loading decentralized world<span class="loading-dots"></span></div>
+    <!-- Progress Circle -->
+    <div class="progress-container">
+      <svg class="progress-circle">
+        <defs>
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <circle class="progress-circle-bg" cx="75" cy="75" r="70"/>
+        <circle class="progress-circle-fill" cx="75" cy="75" r="70"/>
+      </svg>
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
+  </div>
+
+  <script>
+    // Generate floating icons dynamically
+    function createFloatingIcon() {
+      const icon = document.createElement('div');
+      icon.className = 'floating-icon';
+      icon.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="#8b5cf6">
+          <path d="M12 2L2 7v10c0 5.55 3.84 9.739 9 11 5.16-1.261 9-5.45 9-11V7l-10-5z"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+      `;
+      
+      icon.style.left = Math.random() * 100 + '%';
+      icon.style.animationDelay = Math.random() * 10 + 's';
+      icon.style.animationDuration = (20 + Math.random() * 10) + 's';
+      
+      return icon;
+    }
+
+    // Add floating icons
+    const floatingContainer = document.getElementById('floatingIcons');
+    for (let i = 0; i < 8; i++) {
+      floatingContainer.appendChild(createFloatingIcon());
+    }
+
+    // Background words management for performance
+    const backgroundWords = document.querySelectorAll('.background-word');
+    const wordCount = backgroundWords.length;
+
+    // Randomize initial positions and animation for each word
+    backgroundWords.forEach((word, i) => {
+      // Random vertical position (15% to 85%)
+      const top = Math.random() * 70 + 15;
+      word.style.top = `${top}%`;
+      // Random left/right start
+      const leftOrRight = Math.random() > 0.5 ? 'left' : 'right';
+      word.style[leftOrRight] = '-200px';
+      // Random animation direction
+      word.style.animationName = leftOrRight === 'left' ? 'floatWord' : 'floatWordReverse';
+      // Random animation duration (20s to 35s)
+      const duration = Math.random() * 15 + 20;
+      word.style.animationDuration = `${duration}s`;
+      // Random animation delay
+      word.style.animationDelay = `${-Math.random() * duration}s`;
+      // Random font size (1.2rem to 1.8rem)
+      word.style.fontSize = `${1.2 + Math.random() * 0.6}rem`;
+      // Optimize performance
+      word.style.willChange = 'transform, opacity';
+    });
+
+    // Mouse movement: increase speed and opacity
+    let lastMouseX = 0, lastMouseY = 0, lastTime = Date.now();
+    let intensity = 1;
+    document.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      const dx = Math.abs(e.clientX - lastMouseX);
+      const dy = Math.abs(e.clientY - lastMouseY);
+      const dt = now - lastTime;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      lastTime = now;
+      // Calculate movement intensity (0.8 to 2.2)
+      intensity = Math.min(2.2, 0.8 + (dx + dy) / Math.max(dt, 1) * 0.2);
+      // Update background words
+      backgroundWords.forEach((word) => {
+        const baseDuration = parseFloat(word.style.animationDuration);
+        word.style.animationDuration = `${baseDuration / intensity}s`;
+        word.style.opacity = Math.min(1, 0.8 * intensity).toString();
+      });
+    });
+
+    // Add subtle hover effects
+    backgroundWords.forEach((word) => {
+      word.addEventListener('mouseenter', () => {
+        if (window.innerWidth > 768) {
+          word.style.color = '#c4b5fd';
+          word.style.textShadow = '0 0 15px #a78bfa, 0 0 25px #8b5cf6';
+          word.style.transform = 'scale(1.08)';
+        }
+      });
+      
+      word.addEventListener('mouseleave', () => {
+        if (window.innerWidth > 768) {
+          word.style.color = 'rgba(167, 139, 250, 0.8)';
+          word.style.textShadow = '0 0 8px rgba(167, 139, 250, 0.6), 0 0 16px rgba(139, 92, 246, 0.4)';
+          word.style.transform = 'scale(1)';
+        }
+      });
+    });
+
+    // Progress counter animation
+    const progressText = document.getElementById('progressText');
+    const progressCircle = document.querySelector('.progress-circle-fill');
+    const circumference = 439.82;
+    let progress = 0;
+    
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 2.5 + 0.5;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(progressInterval);
+        setTimeout(() => {
+          document.body.style.opacity = '0';
+          document.body.style.transition = 'opacity 1s ease';
+        }, 500);
+      }
+      // Animate the fill gradually from 0% to 100%
+      const offset = circumference * (1 - progress / 100);
+      progressCircle.style.strokeDashoffset = offset;
+      progressText.textContent = Math.floor(progress) + '%';
+    }, 120);
+
+    // Add particle effect on click
+    document.addEventListener('click', (e) => {
+      for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.left = e.clientX + 'px';
+        particle.style.top = e.clientY + 'px';
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        particle.style.background = '#a78bfa';
+        particle.style.borderRadius = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = '1000';
+        particle.style.boxShadow = '0 0 12px #a78bfa, 0 0 24px #8b5cf6';
+        
+        const angle = (Math.PI * 2 * i) / 6;
+        const velocity = 120;
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
+        
+        document.body.appendChild(particle);
+        
+        let opacity = 1;
+        let x = 0;
+        let y = 0;
+        
+        const animate = () => {
+          x += vx * 0.012;
+          y += vy * 0.012;
+          opacity -= 0.025;
+          
+          particle.style.transform = `translate(${x}px, ${y}px)`;
+          particle.style.opacity = opacity;
+          
+          if (opacity > 0) {
+            requestAnimationFrame(animate);
+          } else {
+            document.body.removeChild(particle);
+          }
+        };
+        
+        requestAnimationFrame(animate);
+      }
+    });
+  </script>
+</body>
+</html>
